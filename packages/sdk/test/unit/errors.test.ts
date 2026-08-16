@@ -7,7 +7,6 @@ import {
   TransactionFailedError,
   ValidationError,
   TimeoutError,
-  CoverageNotActiveError,
 } from "../../src/errors/index.js";
 
 describe("errors", () => {
@@ -18,7 +17,6 @@ describe("errors", () => {
     expect(new TransactionFailedError("test").code).toBe("TX_FAILED");
     expect(new ValidationError("test").code).toBe("VALIDATION_FAILED");
     expect(new TimeoutError("test").code).toBe("TIMEOUT");
-    expect(new CoverageNotActiveError(1n).code).toBe("COVERAGE_NOT_ACTIVE");
   });
 
   it("should be instanceof ReineiraError and Error", () => {
@@ -28,7 +26,6 @@ describe("errors", () => {
 
   it("should include contextual info in messages", () => {
     expect(new EscrowNotFoundError(42n).message).toContain("42");
-    expect(new CoverageNotActiveError(7n).message).toContain("7");
   });
 
   it("TransactionFailedError should carry txHash", () => {

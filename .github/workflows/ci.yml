@@ -84,9 +84,6 @@ jobs:
       - name: Compile & test escrow
         run: cd packages/escrow && forge build && forge test -vv
 
-      - name: Compile & test recourse
-        run: cd packages/recourse && forge build && forge test -vv
-
   test-sdk:
     name: Test SDK
     runs-on: ubuntu-latest

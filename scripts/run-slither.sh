@@ -13,7 +13,7 @@ cd "$ROOT"
 
 FAIL_ON="${FAIL_ON:-high}"
 OUT_DIR="${OUT_DIR:-}"
-PACKAGES=("${@:-escrow recourse}")
+PACKAGES=("${@:-escrow}")
 
 if [[ "${#PACKAGES[@]}" -eq 1 && "${PACKAGES[0]}" == *" "* ]]; then
   read -ra PACKAGES <<< "${PACKAGES[0]}"

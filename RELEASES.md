@@ -1,8 +1,31 @@
 # Release Notes
 
 ReineiraOS is programmable, confidential settlement infrastructure for stablecoins —
-escrow, recourse (on‑chain insurance), and an operator orchestration network, on
-Arbitrum with Fhenix FHE and Circle CCTP V2.
+escrow and an operator orchestration network, on Arbitrum with Fhenix FHE and
+Circle CCTP V2.
+
+---
+
+## Unreleased
+
+### 🧹 Scope reduction ahead of external audit
+
+- **Removed `@reineira-os/recourse`** — pools, factory, policy registry, coverage
+  manager, strategy router, and their confidential variants. The recourse‑only
+  Solidity in `shared` (`RecoursePoolLib`, `PoolRiskLib`, `CoverageLib`,
+  `CoverageInviteLib`, `PolicyRegistryLib`, `PoolFactoryLib`, `IUnderwriterPolicy`,
+  `IConfidentialUnderwriterPolicy`, and the pool/coverage/policy event interfaces)
+  went with it.
+- **Removed `@reineira-os/identity`** — the ERC‑8004 agent identity, validation, and
+  reputation registries. Nothing else in the repository referenced them.
+- **SDK:** `sdk.recourse`, `sdk.recoursePlain`, `PoolInstance`, `CoverageInstance`,
+  their plain counterparts, the builder's `.recourse()` step, `RecourseEventName`
+  and the recourse event listeners, `CoverageNotActiveError`, and the recourse
+  addresses/ABIs are gone. Escrow, bridge, and events modules are unchanged.
+- **Unchanged on‑chain surface:** `Escrow` / `ConfidentialEscrow` keep
+  `setCoverageManager()`, `setUnderwriterFee()`, and `coverageManager()`. The ABI and
+  storage layout of the escrow contracts are untouched by this change; an external
+  coverage manager can still be wired in by address.
 
 ---
 

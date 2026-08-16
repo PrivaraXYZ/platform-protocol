@@ -15,15 +15,7 @@ describe("addresses", () => {
   });
 
   it("should include all required addresses", () => {
-    const required = [
-      "confidentialUSDC",
-      "escrow",
-      "escrowReceiver",
-      "policyRegistry",
-      "coverageManager",
-      "poolFactory",
-      "usdc",
-    ];
+    const required = ["confidentialUSDC", "escrow", "escrowReceiver", "usdc"];
     for (const key of required) {
       expect(TESTNET_ADDRESSES).toHaveProperty(key);
     }

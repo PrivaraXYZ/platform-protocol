@@ -14,14 +14,13 @@ Base contracts, interfaces, and mocks shared across all ReineiraOS protocol pack
 
 ### Interfaces
 
-| Interface                   | Description                                                                 |
-| --------------------------- | --------------------------------------------------------------------------- |
-| `ICore`                     | Base interface (CoreInitialized event, ZeroAddress/Unauthorized errors)     |
-| `IConditionResolver`        | Pluggable escrow release conditions (`isConditionMet`, `onConditionSet`)    |
-| `IUnderwriterPolicy`        | Pluggable recourse risk evaluation and dispute judgment (encrypted returns) |
-| `ICCTPV2MessageTransmitter` | Circle CCTP V2 message transmitter                                          |
-| `ICCTPV2EscrowReceiver`     | Cross-chain escrow receiver hook                                            |
-| `IFHERC20Wrapper`           | FHE token wrapping interface                                                |
+| Interface                   | Description                                                              |
+| --------------------------- | ------------------------------------------------------------------------ |
+| `ICore`                     | Base interface (CoreInitialized event, ZeroAddress/Unauthorized errors)  |
+| `IConditionResolver`        | Pluggable escrow release conditions (`isConditionMet`, `onConditionSet`) |
+| `ICCTPV2MessageTransmitter` | Circle CCTP V2 message transmitter                                       |
+| `ICCTPV2EscrowReceiver`     | Cross-chain escrow receiver hook                                         |
+| `IFHERC20Wrapper`           | FHE token wrapping interface                                             |
 
 ### Mocks
 

@@ -87,46 +87,16 @@ describe("EscrowBuilder", () => {
     expect(config.resolverData).toBe("0x");
   });
 
-  it("should validate recourse params", () => {
-    expect(() =>
-      builder().recourse({
-        pool: "bad",
-        policy: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
-        coverageAmount: 100n,
-        expiry: 9999999999,
-      }),
-    ).toThrow(ValidationError);
-
-    expect(() =>
-      builder().recourse({
-        pool: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
-        policy: "bad",
-        coverageAmount: 100n,
-        expiry: 9999999999,
-      }),
-    ).toThrow(ValidationError);
-
-    expect(() =>
-      builder().recourse({
-        pool: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
-        policy: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
-        coverageAmount: 0n,
-        expiry: 9999999999,
-      }),
-    ).toThrow(ValidationError);
-  });
-
-  it("should store valid recourse config", () => {
+  it("should keep resolver config after chaining", () => {
     const config = builder()
-      .recourse({
-        pool: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
-        policy: "0x1234567890123456789012345678901234567890",
-        coverageAmount: 100n,
-        expiry: 9999999999,
-      })
+      .amount(100n)
+      .owner("0x1234567890123456789012345678901234567890")
+      .condition(
+        "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+        "0x1234567890123456789012345678901234567890",
+      )
       .getConfig();
-    expect(config.recourse).toBeDefined();
-    expect(config.recourse!.pool).toBe("0xabcdefabcdefabcdefabcdefabcdefabcdefabcd");
+    expect(config.resolver).toBe("0xabcdefabcdefabcdefabcdefabcdefabcdefabcd");
   });
 
   it("concurrent builders should not interfere", () => {

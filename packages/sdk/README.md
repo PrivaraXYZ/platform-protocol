@@ -127,67 +127,6 @@ const exists = await sdk.escrow.exists(42n);
 const total = await sdk.escrow.total();
 ```
 
-## Recourse
-
-### Pool
-
-```ts
-const pool = await sdk.recourse.createPool({
-  paymentToken: sdk.addresses.confidentialUSDC,
-});
-// pool.id, pool.address, pool.createTx.hash
-
-await pool.addPolicy("0xPolicy...");
-await pool.removePolicy("0xPolicy...");
-
-// Stake / unstake
-await pool.approve(); // explicit, or use autoApprove below
-const { stakeId, tx } = await pool.stake(sdk.usdc(10000), { autoApprove: true });
-await pool.unstake(stakeId);
-
-// Queries
-const count = await sdk.recourse.poolCount();
-const pool = await sdk.recourse.getPool(0n);
-```
-
-### Coverage
-
-```ts
-const coverage = await sdk.recourse.purchaseCoverage({
-  pool: pool.address,
-  policy: "0xPolicy...",
-  escrowId: escrow.id,
-  coverageAmount: sdk.usdc(50000),
-  expiry: Math.floor(Date.now() / 1000) + 86400 * 30,
-});
-// coverage.id, coverage.createTx.hash
-
-const status = await coverage.status(); // Active, Disputed, Claimed, Expired
-await coverage.dispute("0xProofBytes...");
-
-// Get existing coverage
-const coverage = sdk.recourse.getCoverage(42n);
-```
-
-### Escrow + Recourse (one flow)
-
-```ts
-const escrow = await sdk.escrow
-  .build()
-  .amount(sdk.usdc(50000))
-  .owner("0xRecipient...")
-  .condition("0xResolver...")
-  .recourse({
-    pool: pool.address,
-    policy: "0xPolicy...",
-    coverageAmount: sdk.usdc(50000),
-    expiry: Math.floor(Date.now() / 1000) + 86400 * 30,
-  })
-  .create();
-
-escrow.coverage.id; // coverage was purchased atomically
-```
-
 ## Cross-Chain (CCTP)
 
 ```ts
@@ -206,9 +145,6 @@ const taskId = await sdk.bridge.submitToCoordinator("0xBurnTxHash...");
 const unsub = sdk.events.onEscrowCreated((escrowId) => { ... });
 const unsub = sdk.events.onEscrowFunded((escrowId, payer) => { ... }, escrowId);
 const unsub = sdk.events.onEscrowRedeemed((escrowId) => { ... });
-const unsub = sdk.events.onCoveragePurchased((coverageId) => { ... });
-const unsub = sdk.events.onDisputeFiled((coverageId) => { ... });
-const unsub = sdk.events.onPoolCreated((poolId, pool, underwriter) => { ... });
 
 // Query past events
 const logs = await sdk.events.queryEscrowEvents("EscrowCreated", fromBlock);
@@ -247,14 +183,13 @@ import { usdc, formatUsdc } from "@reineira-os/sdk";
 
 ```ts
 import {
-  ApprovalRequiredError, // fund/stake without approval
+  ApprovalRequiredError, // fund without approval
   ValidationError, // invalid params
   TransactionFailedError, // on-chain revert (has .txHash)
   EscrowNotFoundError, // escrow doesn't exist
   TimeoutError, // waitForFunded/waitForRedeemable timeout
   FHEInitError, // cofhejs initialization failed
   EncryptionError, // FHE encryption failed
-  CoverageNotActiveError, // dispute on non-active coverage
 } from "@reineira-os/sdk";
 
 try {
@@ -288,8 +223,6 @@ Instances created by mutations carry `.createTx`:
 
 ```ts
 escrow.createTx.hash;
-pool.createTx.hash;
-coverage.createTx.hash;
 ```
 
 ## Local Development
