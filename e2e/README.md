@@ -9,8 +9,6 @@ scripts + `@reineira-os/sdk`'s plain modules.
 - `flows/escrow.test.ts` — full plain escrow lifecycle: create → fund (with
   ERC20 auto-approve) → redeem; batch redeem; partial funding; existing-id
   re-instancing.
-- `flows/recourse.test.ts` — pool creation, pool lookup, staking with
-  auto-approve, total-liquidity / staked-amount views.
 - `flows/errors.test.ts` — SDK error code semantics (`VALIDATION_FAILED`,
   `APPROVAL_REQUIRED`).
 
@@ -18,9 +16,6 @@ scripts + `@reineira-os/sdk`'s plain modules.
 
 - Cross-chain CCTP settlement (would require a second chain + attestation
   service mock — out of scope for plain-mode launch smoke).
-- Coverage purchase + dispute (requires an `IUnderwriterPolicy`
-  implementation deployed; defer until a sample policy is bundled with the
-  recourse package).
 - FHE / confidential paths (covered by `forge test` per package).
 
 ## Running locally
@@ -38,8 +33,8 @@ The orchestrator:
 1. Builds `@reineira-os/sdk`.
 2. Starts `anvil` in the background.
 3. Deploys `MockUSDC`.
-4. Runs plain `script/Deploy.s.sol` for escrow + recourse with the deployed
-   USDC address piped through env vars.
+4. Runs plain `script/Deploy.s.sol` for escrow with the deployed USDC
+   address piped through env vars.
 5. Mints USDC to the deterministic deployer.
 6. Writes `e2e/.addresses.local.json` (gitignored).
 7. Runs `vitest` against the local stack.

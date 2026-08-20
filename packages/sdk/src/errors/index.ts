@@ -55,13 +55,6 @@ export class ConditionNotMetError extends ReineiraError {
   }
 }
 
-export class CoverageNotActiveError extends ReineiraError {
-  constructor(coverageId: bigint) {
-    super(`Coverage ${coverageId} is not active`, "COVERAGE_NOT_ACTIVE");
-    this.name = "CoverageNotActiveError";
-  }
-}
-
 export class ValidationError extends ReineiraError {
   constructor(message: string) {
     super(message, "VALIDATION_FAILED");

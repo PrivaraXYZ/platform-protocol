@@ -13,7 +13,6 @@ import type {
 import { TransactionFailedError, TimeoutError, ApprovalRequiredError } from "../errors/index.js";
 import { pollUntil } from "../utils/polling.js";
 import type { BridgeModule } from "./bridge.js";
-import type { CoverageInstance } from "./coverage-instance.js";
 import type { ethers } from "ethers";
 
 const DEFAULT_GAS_BUFFER = 1.3;
@@ -36,7 +35,6 @@ async function estimateGas(contract: Contract, method: string, args: unknown[]):
 export class EscrowInstance {
   public readonly id: bigint;
   public readonly createTx?: TransactionResult;
-  public readonly coverage?: CoverageInstance;
 
   private readonly escrowContract: Contract;
   private readonly tokenContract: Contract;
@@ -51,14 +49,13 @@ export class EscrowInstance {
     signer: ethers.Signer,
     fhe: FHEClient,
     addresses: NetworkAddresses,
-    opts?: { createTx?: TransactionResult; coverage?: CoverageInstance; bridge?: BridgeModule },
+    opts?: { createTx?: TransactionResult; bridge?: BridgeModule },
   ) {
     this.id = escrowId;
     this.signer = signer;
     this.fhe = fhe;
     this.addresses = addresses;
     this.createTx = opts?.createTx;
-    this.coverage = opts?.coverage;
     this.bridgeModule = opts?.bridge ?? null;
     this.escrowContract = new Contract(addresses.escrow, CONFIDENTIAL_ESCROW_ABI, signer);
     this.tokenContract = new Contract(addresses.confidentialUSDC, FHERC20_ABI, signer);

@@ -49,17 +49,6 @@ export interface CreateEscrowParams {
   resolver?: string;
   /** ABI-encoded data passed to resolver.onConditionSet(). */
   resolverData?: string;
-  /** Attach recourse coverage at creation time. */
-  recourse?: RecourseParams;
-}
-
-export interface RecourseParams {
-  pool: string;
-  policy: string;
-  coverageAmount: bigint;
-  expiry: number;
-  policyData?: string;
-  riskProof?: string;
 }
 
 // ─── Funding ────────────────────────────────────────────────
@@ -127,36 +116,6 @@ export interface BridgeBurnResult {
   relayTaskId?: string;
 }
 
-// ─── Recourse ──────────────────────────────────────────────
-
-export interface PurchaseCoverageParams {
-  pool: string;
-  policy: string;
-  escrowId: bigint;
-  coverageAmount: bigint;
-  expiry: number;
-  policyData?: string;
-  riskProof?: string;
-}
-
-export interface CreatePoolParams {
-  paymentToken: string;
-  /** Optional Pool Manager address. Defaults to the caller (Creator) when omitted. */
-  initialManager?: string;
-  /** Optional Guardian address. Zero address allowed; no in-pool powers in v1. */
-  guardian?: string;
-  /** True for open pools (any buyer). False for private (voucher-gated). Defaults to true. */
-  isOpen?: boolean;
-}
-
-export interface CoverageInvite {
-  pool: string;
-  invitee: string;
-  maxUses: bigint;
-  deadline: bigint;
-  inviteId: bigint;
-}
-
 export interface PollOptions {
   pollIntervalMs?: number;
   timeoutMs?: number;
@@ -177,9 +136,6 @@ export interface NetworkAddresses {
   confidentialUSDC: string;
   escrow: string;
   escrowReceiver: string;
-  policyRegistry: string;
-  coverageManager: string;
-  poolFactory: string;
   usdc: string;
   cctpMessageTransmitter: string;
   trustedForwarder: string;
@@ -187,10 +143,6 @@ export interface NetworkAddresses {
   /** Plain (non-FHE) contract addresses — mainnet launch path */
   plainEscrow: string;
   plainEscrowReceiver: string;
-  plainRecoursePool: string;
-  plainPoolFactory: string;
-  plainPolicyRegistry: string;
-  plainCoverageManager: string;
 }
 
 // ─── Plain SDK ──────────────────────────────────────────────
@@ -204,38 +156,6 @@ export interface CreatePlainEscrowParams {
   resolver?: string;
   /** ABI-encoded data passed to the resolver. */
   resolverData?: string;
-}
-
-export interface CreatePlainPoolParams {
-  paymentToken: string;
-  /** Optional Pool Manager address. Defaults to the caller (Creator) when omitted. */
-  initialManager?: string;
-  /** Optional Guardian address. Zero address allowed; no in-pool powers in v1. */
-  guardian?: string;
-  /** True for open pools (any buyer). False for private (voucher-gated). Defaults to true. */
-  isOpen?: boolean;
-}
-
-export interface PurchasePlainCoverageParams {
-  holder: string;
-  pool: string;
-  policy: string;
-  escrowId: bigint;
-  coverageAmount: bigint;
-  expiry: number;
-  policyData?: string;
-  riskProof?: string;
-  /** EIP-712 coverage invite. Required when buying from a private pool. */
-  invite?: CoverageInvite;
-  /** Manager's signature over the invite. Required when invite is provided. */
-  inviteSig?: string;
-}
-
-export enum PlainCoverageStatus {
-  None = 0,
-  Active = 1,
-  Expired = 2,
-  Claimed = 3,
 }
 
 /** Returned from all state-changing SDK methods. */

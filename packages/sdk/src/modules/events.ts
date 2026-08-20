@@ -1,10 +1,6 @@
 import { Contract } from "ethers";
 import type { ethers } from "ethers";
-import {
-  CONFIDENTIAL_ESCROW_ABI,
-  COVERAGE_MANAGER_ABI,
-  POOL_FACTORY_ABI,
-} from "../constants/abis.js";
+import { CONFIDENTIAL_ESCROW_ABI } from "../constants/abis.js";
 import type { NetworkAddresses } from "../types/index.js";
 
 export type EscrowEventName =
@@ -15,13 +11,6 @@ export type EscrowEventName =
   | "FeeStamped"
   | "FeeDistributed"
   | "CoverageManagerSet";
-
-export type RecourseEventName =
-  | "CoveragePurchased"
-  | "DisputeFiled"
-  | "CoverageClaimed"
-  | "CoverageExpired"
-  | "PoolCreated";
 
 export type Unsubscribe = () => void;
 
@@ -40,13 +29,9 @@ export type Unsubscribe = () => void;
  */
 export class EventsModule {
   private readonly escrowContract: Contract;
-  private readonly coverageContract: Contract;
-  private readonly factoryContract: Contract;
 
   constructor(provider: ethers.Provider, addresses: NetworkAddresses) {
     this.escrowContract = new Contract(addresses.escrow, CONFIDENTIAL_ESCROW_ABI, provider);
-    this.coverageContract = new Contract(addresses.coverageManager, COVERAGE_MANAGER_ABI, provider);
-    this.factoryContract = new Contract(addresses.poolFactory, POOL_FACTORY_ABI, provider);
   }
 
   /** Listen for new escrow creations. */
@@ -95,49 +80,6 @@ export class EventsModule {
     };
   }
 
-  /** Listen for coverage purchases. */
-  onCoveragePurchased(callback: (coverageId: bigint) => void): Unsubscribe {
-    const handler = (coverageId: bigint) => callback(coverageId);
-    this.coverageContract.on("CoveragePurchased", handler);
-    return () => {
-      this.coverageContract.off("CoveragePurchased", handler);
-    };
-  }
-
-  /** Listen for dispute filings. */
-  onDisputeFiled(callback: (coverageId: bigint) => void): Unsubscribe {
-    const handler = (coverageId: bigint) => callback(coverageId);
-    this.coverageContract.on("DisputeFiled", handler);
-    return () => {
-      this.coverageContract.off("DisputeFiled", handler);
-    };
-  }
-
-  /** Listen for new pool creation. Args: poolId, pool, creator, manager, guardian, isOpen. */
-  onPoolCreated(
-    callback: (
-      poolId: bigint,
-      pool: string,
-      creator: string,
-      manager: string,
-      guardian: string,
-      isOpen: boolean,
-    ) => void,
-  ): Unsubscribe {
-    const handler = (
-      poolId: bigint,
-      pool: string,
-      creator: string,
-      manager: string,
-      guardian: string,
-      isOpen: boolean,
-    ) => callback(poolId, pool, creator, manager, guardian, isOpen);
-    this.factoryContract.on("PoolCreated", handler);
-    return () => {
-      this.factoryContract.off("PoolCreated", handler);
-    };
-  }
-
   /** Query past escrow events. */
   async queryEscrowEvents(
     eventName: EscrowEventName,
@@ -148,21 +90,8 @@ export class EventsModule {
     return this.escrowContract.queryFilter(filter, fromBlock, toBlock) as Promise<ethers.Log[]>;
   }
 
-  /** Query past recourse events. */
-  async queryRecourseEvents(
-    eventName: RecourseEventName,
-    fromBlock?: number,
-    toBlock?: number,
-  ): Promise<ethers.Log[]> {
-    const contract = eventName === "PoolCreated" ? this.factoryContract : this.coverageContract;
-    const filter = contract.filters[eventName]();
-    return contract.queryFilter(filter, fromBlock, toBlock) as Promise<ethers.Log[]>;
-  }
-
   /** Remove all event listeners. */
   removeAllListeners(): void {
     this.escrowContract.removeAllListeners();
-    this.coverageContract.removeAllListeners();
-    this.factoryContract.removeAllListeners();
   }
 }

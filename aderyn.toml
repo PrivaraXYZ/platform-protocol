@@ -1,5 +1,5 @@
 root = "."
-src = ["packages/escrow/contracts", "packages/recourse/contracts"]
+src = ["packages/escrow/contracts"]
 exclude = ["test", "mocks", "script", "node_modules", "out", "foundry-cache", "cache", "artifacts", "broadcast", "deployments"]
 
 [remappings]

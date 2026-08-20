@@ -306,7 +306,7 @@ contract EscrowSettlementTest is Test {
         return mgr;
     }
 
-    function test_recourse_feeFromRecourseDeductedOnRedeem() public {
+    function test_underwriterFee_deductedOnRedeem() public {
         address feeRecipient = makeAddr("feeRecipient");
         _createEscrow(escrowOwner, ESCROW_AMOUNT);
 
@@ -324,7 +324,7 @@ contract EscrowSettlementTest is Test {
         assertEq(usdc.balanceOf(feeRecipient), FEE_AMOUNT);
     }
 
-    function test_recourse_feeZeroedForUnauthorizedHolder() public {
+    function test_underwriterFee_zeroedForUnauthorizedHolder() public {
         address feeRecipient = makeAddr("feeRecipient");
         address stranger = makeAddr("stranger");
         _createEscrow(escrowOwner, ESCROW_AMOUNT);

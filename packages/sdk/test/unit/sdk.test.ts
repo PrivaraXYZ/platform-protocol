@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import { Wallet, JsonRpcProvider } from "ethers";
 import { ReineiraSDK } from "../../src/sdk.js";
 import { EscrowModule } from "../../src/modules/escrow.js";
-import { RecourseModule } from "../../src/modules/recourse.js";
 import { BridgeModule } from "../../src/modules/bridge.js";
 import { EventsModule } from "../../src/modules/events.js";
 import { TESTNET_ADDRESSES } from "../../src/constants/addresses.js";
@@ -21,7 +20,6 @@ describe("ReineiraSDK", () => {
 
     expect(sdk).toBeInstanceOf(ReineiraSDK);
     expect(sdk.escrow).toBeInstanceOf(EscrowModule);
-    expect(sdk.recourse).toBeInstanceOf(RecourseModule);
     expect(sdk.bridge).toBeInstanceOf(BridgeModule);
     expect(sdk.events).toBeInstanceOf(EventsModule);
   });

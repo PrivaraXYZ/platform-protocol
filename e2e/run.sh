@@ -7,11 +7,10 @@ set -euo pipefail
 #   1. Build SDK
 #   2. Start anvil (background, deterministic accounts)
 #   3. Deploy MockUSDC via forge create
-#   4. Run plain Deploy.s.sol for escrow + recourse, capture addresses
+#   4. Run plain Deploy.s.sol for escrow, capture addresses
 #   5. Mint USDC to deployer + approve plainEscrow
-#   6. Write e2e/.addresses.local.json
-#   7. Run vitest (e2e/flows/*.test.ts)
-#   8. Stop anvil
+#   6. Write e2e/.addresses.local.json + run vitest (e2e/flows/*.test.ts)
+#   7. Stop anvil
 
 E2E_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$E2E_DIR/.." && pwd)"
@@ -44,10 +43,10 @@ require_cmd pnpm
 
 cd "$ROOT"
 
-echo "[1/7] Building SDK..."
+echo "[1/6] Building SDK..."
 pnpm --filter @reineira-os/sdk run build > /dev/null
 
-echo "[2/7] Starting anvil..."
+echo "[2/6] Starting anvil..."
 anvil --silent &
 ANVIL_PID=$!
 
@@ -60,7 +59,7 @@ for i in {1..40}; do
 done
 cast chain-id --rpc-url "$ANVIL_RPC" > /dev/null
 
-echo "[3/7] Deploying MockUSDC..."
+echo "[3/6] Deploying MockUSDC..."
 USDC_OUT=$(cd "$ROOT/packages/shared" && forge create \
   contracts/mocks/MockUSDC.sol:MockUSDC \
   --rpc-url "$ANVIL_RPC" \
@@ -74,7 +73,7 @@ if [ -z "$USDC_ADDRESS" ]; then
 fi
 echo "  MockUSDC: $USDC_ADDRESS"
 
-echo "[4/7] Deploying plain escrow stack..."
+echo "[4/6] Deploying plain escrow stack..."
 ESCROW_OUT=$(cd "$ROOT/packages/escrow" && \
   PRIVATE_KEY="$ANVIL_PK" \
   USDC_ADDRESS="$USDC_ADDRESS" \
@@ -90,53 +89,12 @@ fi
 echo "  Escrow: $ESCROW_ADDR"
 echo "  CCTPV2EscrowReceiver: $ESCROW_RECEIVER"
 
-echo "[5/7] Deploying plain recourse stack..."
-INS_OUT=$(cd "$ROOT/packages/recourse" && \
-  PRIVATE_KEY="$ANVIL_PK" \
-  USDC_ADDRESS="$USDC_ADDRESS" \
-  ESCROW_ADDRESS="$ESCROW_ADDR" \
-  forge script script/Deploy.s.sol --rpc-url "$ANVIL_RPC" --broadcast 2>&1)
-POLICY_REG=$(echo "$INS_OUT" | awk '/^  PolicyRegistry:/ {print $2}' | tail -1)
-COVERAGE_MGR=$(echo "$INS_OUT" | awk '/^  CoverageManager:/ {print $2}' | tail -1)
-POOL_FACTORY=$(echo "$INS_OUT" | awk '/^  PoolFactory:/ {print $2}' | tail -1)
-if [ -z "$POLICY_REG" ] || [ -z "$COVERAGE_MGR" ] || [ -z "$POOL_FACTORY" ]; then
-  echo "Failed to parse recourse deploy output. Last 30 lines:"
-  echo "$INS_OUT" | tail -30
-  exit 1
-fi
-echo "  PolicyRegistry: $POLICY_REG"
-echo "  CoverageManager: $COVERAGE_MGR"
-echo "  PoolFactory: $POOL_FACTORY"
-
-echo "[5b/7] Deploying + registering MockUnderwriterPolicy, wiring escrow..."
-POLICY_OUT=$(cd "$ROOT/packages/recourse" && forge create \
-  contracts/mocks/MockUnderwriterPolicy.sol:MockUnderwriterPolicy \
-  --rpc-url "$ANVIL_RPC" \
-  --private-key "$ANVIL_PK" \
-  --broadcast 2>&1)
-POLICY_ADDR=$(echo "$POLICY_OUT" | awk '/Deployed to:/ {print $3}')
-if [ -z "$POLICY_ADDR" ]; then
-  echo "Failed to capture MockUnderwriterPolicy address. Output:"
-  echo "$POLICY_OUT"
-  exit 1
-fi
-echo "  MockUnderwriterPolicy: $POLICY_ADDR"
-
-cast send "$POLICY_REG" "registerPolicy(address)" "$POLICY_ADDR" \
-  --rpc-url "$ANVIL_RPC" --private-key "$ANVIL_PK" > /dev/null
-cast send "$ESCROW_ADDR" "setCoverageManager(address)" "$COVERAGE_MGR" \
-  --rpc-url "$ANVIL_RPC" --private-key "$ANVIL_PK" > /dev/null
-echo "  Registered policy in registry + wired escrow -> coverageManager"
-
-echo "[6/7] Minting USDC + adding to allowed-tokens list..."
+echo "[5/6] Minting USDC to deployer..."
 # Mint 1M USDC (6 decimals) to deployer
 cast send "$USDC_ADDRESS" \
   "mint(address,uint256)" "$ANVIL_ADDR" "1000000000000" \
   --rpc-url "$ANVIL_RPC" --private-key "$ANVIL_PK" > /dev/null
-
-# Allowed-token already added during PoolFactory init in Deploy.s.sol — confirm
-ALLOWED=$(cast call "$POOL_FACTORY" "isAllowedToken(address)(bool)" "$USDC_ADDRESS" --rpc-url "$ANVIL_RPC" 2>/dev/null || echo "")
-echo "  USDC minted to deployer; allowed-token check returned: ${ALLOWED:-unknown}"
+echo "  USDC minted to deployer"
 
 # Write addresses
 cat > "$E2E_DIR/.addresses.local.json" <<EOF
@@ -148,17 +106,13 @@ cat > "$E2E_DIR/.addresses.local.json" <<EOF
   "addresses": {
     "usdc": "$USDC_ADDRESS",
     "plainEscrow": "$ESCROW_ADDR",
-    "plainEscrowReceiver": "$ESCROW_RECEIVER",
-    "plainPolicyRegistry": "$POLICY_REG",
-    "plainCoverageManager": "$COVERAGE_MGR",
-    "plainPoolFactory": "$POOL_FACTORY",
-    "plainUnderwriterPolicy": "$POLICY_ADDR"
+    "plainEscrowReceiver": "$ESCROW_RECEIVER"
   }
 }
 EOF
 echo "  Wrote $E2E_DIR/.addresses.local.json"
 
-echo "[7/7] Running e2e flows..."
+echo "[6/6] Running e2e flows..."
 cd "$E2E_DIR" && pnpm run test
 
 echo ""

@@ -3,11 +3,9 @@ import { SequentialNonceWallet } from "./utils/sequential-nonce-wallet.js";
 import type { ethers } from "ethers";
 import { FHEClient } from "./crypto/fhe.js";
 import { EscrowModule } from "./modules/escrow.js";
-import { RecourseModule } from "./modules/recourse.js";
 import { BridgeModule } from "./modules/bridge.js";
 import { EventsModule } from "./modules/events.js";
 import { PlainEscrowModule } from "./modules/escrow-plain.js";
-import { PlainRecourseModule } from "./modules/recourse-plain.js";
 import { getAddresses } from "./constants/addresses.js";
 import { FHERC20_ABI, ERC20_ABI } from "./constants/abis.js";
 import { usdc, formatUsdc } from "./utils/amounts.js";
@@ -26,13 +24,10 @@ function isKeyConfig(config: SDKConfig): config is SDKConfigWithKey {
 
 export class ReineiraSDK {
   public readonly escrow: EscrowModule;
-  public readonly recourse: RecourseModule;
   public readonly bridge: BridgeModule;
   public readonly events: EventsModule;
   /** Plain (non-FHE) escrow — mainnet launch path. */
   public readonly escrowPlain: PlainEscrowModule;
-  /** Plain (non-FHE) recourse — mainnet launch path. */
-  public readonly recoursePlain: PlainRecourseModule;
   public readonly addresses: NetworkAddresses;
   public readonly signer: ethers.Signer;
   public readonly provider: ethers.Provider;
@@ -50,13 +45,10 @@ export class ReineiraSDK {
     this.fhe = new FHEClient();
 
     this.escrow = new EscrowModule(signer, this.fhe, addresses);
-    this.recourse = new RecourseModule(signer, this.fhe, addresses);
     this.bridge = new BridgeModule(addresses);
     this.events = new EventsModule(provider, addresses);
     this.escrowPlain = new PlainEscrowModule(signer, addresses);
-    this.recoursePlain = new PlainRecourseModule(signer, addresses);
 
-    this.escrow.setRecourseModule(this.recourse);
     this.escrow.setBridgeModule(this.bridge);
   }
 

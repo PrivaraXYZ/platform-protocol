@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 import { ValidationError } from "../errors/index.js";
-import type { RecourseParams } from "../types/index.js";
 import type { EscrowInstance } from "./escrow-instance.js";
 
 export interface EscrowBuildConfig {
@@ -8,7 +7,6 @@ export interface EscrowBuildConfig {
   owner?: string;
   resolver?: string;
   resolverData?: string;
-  recourse?: RecourseParams;
 }
 
 export class EscrowBuilder {
@@ -36,17 +34,6 @@ export class EscrowBuilder {
       throw new ValidationError(`Invalid resolver address: ${resolver}`);
     this.config.resolver = resolver;
     this.config.resolverData = resolverData ?? "0x";
-    return this;
-  }
-
-  recourse(params: RecourseParams): this {
-    if (!ethers.isAddress(params.pool))
-      throw new ValidationError(`Invalid pool address: ${params.pool}`);
-    if (!ethers.isAddress(params.policy))
-      throw new ValidationError(`Invalid policy address: ${params.policy}`);
-    if (params.coverageAmount <= 0n)
-      throw new ValidationError("Coverage amount must be greater than 0");
-    this.config.recourse = params;
     return this;
   }
 

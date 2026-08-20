@@ -1,7 +1,7 @@
 {
   "name": "@reineira-os/sdk",
   "version": "1.0.0",
-  "description": "TypeScript SDK for ReineiraOS — programmable confidential settlement on Arbitrum. FHE-encrypted escrows, recourse pools, cross-chain CCTP bridging.",
+  "description": "TypeScript SDK for ReineiraOS — programmable confidential settlement on Arbitrum. FHE-encrypted escrows, cross-chain CCTP bridging.",
   "license": "MIT",
   "author": "Reineira <engineering@reineira.xyz> (https://reineira.xyz)",
   "repository": {
@@ -24,7 +24,6 @@
     "stablecoin",
     "usdc",
     "cctp",
-    "recourse",
     "fhenix"
   ],
   "main": "dist/index.js",

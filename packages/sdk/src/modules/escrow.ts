@@ -6,7 +6,6 @@ import type { NetworkAddresses, TransactionResult, CreateEscrowParams } from "..
 import { EscrowNotFoundError, TransactionFailedError, ValidationError } from "../errors/index.js";
 import { EscrowBuilder, type EscrowBuildConfig } from "./escrow-builder.js";
 import { EscrowInstance } from "./escrow-instance.js";
-import type { RecourseModule } from "./recourse.js";
 import type { BridgeModule } from "./bridge.js";
 
 const FALLBACK_GAS_LIMIT = 900_000n;
@@ -16,7 +15,6 @@ export class EscrowModule {
   private readonly fhe: FHEClient;
   private readonly addresses: NetworkAddresses;
   private readonly _signer: ethers.Signer;
-  private recourseModule: RecourseModule | null = null;
   private bridgeModule: BridgeModule | null = null;
 
   constructor(signer: ethers.Signer, fhe: FHEClient, addresses: NetworkAddresses) {
@@ -24,11 +22,6 @@ export class EscrowModule {
     this.fhe = fhe;
     this.addresses = addresses;
     this.escrowContract = new Contract(addresses.escrow, CONFIDENTIAL_ESCROW_ABI, signer);
-  }
-
-  /** @internal */
-  setRecourseModule(recourse: RecourseModule): void {
-    this.recourseModule = recourse;
   }
 
   /** @internal */
@@ -50,19 +43,17 @@ export class EscrowModule {
     // Validate through builder to get consistent error messages
     const builder = this.build().amount(params.amount).owner(params.owner);
     if (params.resolver) builder.condition(params.resolver, params.resolverData);
-    if (params.recourse) builder.recourse(params.recourse);
     return builder.create();
   }
 
   /**
-   * Fluent builder for complex escrows (conditions, recourse).
+   * Fluent builder for complex escrows (conditions).
    *
    * ```ts
    * const escrow = await sdk.escrow.build()
    *   .amount(sdk.usdc(1000))
    *   .owner("0x...")
    *   .condition("0xResolver...", encodedData)
-   *   .recourse({...})
    *   .create();
    * ```
    */
@@ -162,27 +153,8 @@ export class EscrowModule {
       gasUsed: receipt.gasUsed,
     };
 
-    let coverage;
-    if (config.recourse) {
-      if (!this.recourseModule) {
-        throw new TransactionFailedError(
-          ".recourse() requires the recourse module. Use sdk.escrow (not standalone EscrowModule).",
-        );
-      }
-      coverage = await this.recourseModule.purchaseCoverage({
-        pool: config.recourse.pool,
-        policy: config.recourse.policy,
-        escrowId,
-        coverageAmount: config.recourse.coverageAmount,
-        expiry: config.recourse.expiry,
-        policyData: config.recourse.policyData,
-        riskProof: config.recourse.riskProof,
-      });
-    }
-
     return new EscrowInstance(escrowId, this._signer, this.fhe, this.addresses, {
       createTx,
-      coverage,
       bridge: this.bridgeModule ?? undefined,
     });
   }
